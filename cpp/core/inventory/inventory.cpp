@@ -1,4 +1,4 @@
-#include <gamefoundation/inventory.hpp>
+#include "inventory.hpp"
 
 #include <algorithm>
 #include <utility>

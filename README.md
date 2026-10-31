@@ -2,26 +2,46 @@
 
 通用游戏系统框架，采用核心代码与引擎、平台适配层分离的结构。
 
-## 当前功能
+## 代码组织
 
-- 可独立构建的 C++ 核心静态库。
-- 基础背包：添加、移除、堆叠、容量限制和数量查询。
-- 使用 CTest 运行的规则测试，不依赖 Unreal Engine。
+先按语言分区，再按系统模块组织。C++ 同一模块的头文件与实现放在同一目录，测试按模块归档。
 
-UE 适配插件、Lua 接入及其他系统尚未实现。
+| 目录 | 职责 | 当前状态 |
+| --- | --- | --- |
+| `cpp/` | C++ 核心、适配层、构建与测试 | 已实现基础背包及测试 |
+| `typescript/` | TypeScript 核心与适配层，面向 Cocos 和微信小游戏 | 已实现独立核心包、基础背包及测试 |
+| `specs/` | 两种语言共同遵循的系统规则 | 已整理背包规则 |
+| `docs/` | 项目定位与整体设计 | 已说明双语言组织方式 |
 
-## 独立构建
+C++ 和 TypeScript 分别维护实现，共享规则，不要求进度完全一致。Cocos、微信和 UE 适配均尚未实现。
+
+## C++ 独立构建
 
 需要 CMake 3.20 或更新版本，以及支持 C++17 的编译器。
 
 ```sh
-cmake -S . -B build/debug
-cmake --build build/debug --config Debug
-ctest --test-dir build/debug -C Debug --output-on-failure
+cmake -S cpp -B build/cpp/debug
+cmake --build build/cpp/debug --config Debug
+ctest --test-dir build/cpp/debug -C Debug --output-on-failure
 ```
+
+## TypeScript 独立构建与测试
+
+需要 Node.js 20 或更新版本。在仓库根目录执行，测试命令会自动编译：
+
+```sh
+npm --prefix typescript/core ci
+npm --prefix typescript/core test
+```
+
+Windows PowerShell 如无法执行 `npm.ps1`，可使用 `npm.cmd` 替换 `npm`。
 
 ## 文档
 
 - [项目定位与设计约定](docs/project-overview.md)：框架职责、系统范围、代码组织以及与游戏项目的复用方式。
-- [独立核心构建](docs/building.md)：环境要求、构建命令和 CMake 接入方式。
-- [基础背包](docs/inventory.md)：接口用法、规则和错误处理。
+- [背包规则](specs/inventory.md)：两种语言共同遵循的模块行为。
+- [C++ 核心构建](cpp/docs/building.md)：环境要求、构建命令和按模块接入方式。
+- [C++ 基础背包](cpp/docs/inventory.md)：接口用法、数据表示和错误处理。
+- [TypeScript 版本](typescript/README.md)：核心包布局和接入边界。
+- [TypeScript 构建](typescript/docs/building.md)：安装、编译和测试命令。
+- [TypeScript 基础背包](typescript/docs/inventory.md)：接口用法、安全整数范围和查询快照。

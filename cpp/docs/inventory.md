@@ -1,17 +1,19 @@
-# 基础背包
+# C++ 基础背包
 
 ## 范围
 
 背包模块提供物品添加、移除、堆叠、容量限制和数量查询。实现仅使用标准 C++，不依赖 UE 对象、界面或资源。
 
+头文件与实现位于 `cpp/core/inventory/`，测试位于 `cpp/tests/inventory/`。跨语言共同遵循的行为见[背包规则](../../specs/inventory.md)。
+
 当前版本不包含存档、物品效果、装备、重量限制、拖拽排序或稳定的格子编号。这些能力根据后续需求扩展。
 
 ## 使用示例
 
-将使用方链接到 `GameFoundation::Core` 后，可以直接使用公共头文件：
+将使用方链接到 `GameFoundation::Inventory` 或 `GameFoundation::Core` 后，可以直接使用公共头文件：
 
 ```cpp
-#include <gamefoundation/inventory.hpp>
+#include <inventory/inventory.hpp>
 
 int main() {
     using gamefoundation::Inventory;
@@ -34,16 +36,12 @@ int main() {
 
 独立构建和 CMake 接入方式见[独立核心构建](building.md)。
 
-## 数据与规则
+## C++ 数据表示
 
-- 背包容量以格数计算。构造参数为 `std::uint32_t`，容量为 `0` 的背包合法，但无法添加物品。
-- `ItemDefinition::id` 是非空字符串，区分大小写；物品配置由使用方管理。
-- `ItemDefinition::max_stack_size` 是每格堆叠上限，必须大于 `0`，默认值为 `1`。
+- 构造参数为 `std::uint32_t`，表示格数上限。
+- `ItemDefinition::id` 使用 `std::string` 保存；查询和移除接口使用 `std::string_view` 接收 ID。
+- `ItemDefinition::max_stack_size` 使用 `std::int32_t`，默认值为 `1`。
 - 单次添加或移除的数量使用 `std::int32_t`，必须大于 `0`。
-- 同一物品 ID 仍存在于背包时，添加操作必须使用相同的堆叠上限，否则返回错误。全部移除后，旧定义不会保留。
-- 添加时先填充已有堆叠，再使用新格子；不同物品 ID 不共享堆叠。
-- 移除时从最后一叠该物品开始消耗，移除空堆叠，尽量释放格子。
-- 业务校验失败时，整个请求被拒绝，背包数据保持原状，不进行部分添加或部分移除。
 - `GetItemCount` 使用 `std::int64_t` 返回总数量，避免多个大堆叠的数量相加产生 32 位溢出。
 
 ## 接口

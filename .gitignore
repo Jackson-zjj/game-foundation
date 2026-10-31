@@ -1,5 +1,11 @@
 /build/
 /out/
-/.vs/
-/.idea/
+/cpp/build/
+/cpp/out/
+.vs/
+.idea/
+node_modules/
+/typescript/**/dist/
+/typescript/**/coverage/
+*.tsbuildinfo
 CMakeUserPresets.json

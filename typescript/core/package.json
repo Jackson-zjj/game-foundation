@@ -1,0 +1,32 @@
+{
+  "name": "@game-foundation/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Engine-independent game systems for GameFoundation",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./inventory": {
+      "types": "./dist/inventory/inventory.d.ts",
+      "import": "./dist/inventory/inventory.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:types": "tsc -p tsconfig.tests.json",
+    "test": "npm run build && npm run test:types && node --test"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

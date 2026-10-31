@@ -1,5 +1,5 @@
 add_executable(gamefoundation_inventory_tests inventory_tests.cpp)
-target_link_libraries(gamefoundation_inventory_tests PRIVATE GameFoundation::Core)
+target_link_libraries(gamefoundation_inventory_tests PRIVATE GameFoundation::Inventory)
 
 if(MSVC)
     target_compile_options(gamefoundation_inventory_tests PRIVATE /W4 /permissive-)

@@ -1,4 +1,4 @@
-#include <gamefoundation/inventory.hpp>
+#include <inventory/inventory.hpp>
 
 #include <cstdint>
 #include <exception>

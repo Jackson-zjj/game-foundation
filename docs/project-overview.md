@@ -6,9 +6,9 @@ GameFoundation 是通用游戏系统框架，采用核心代码与引擎、平�
 
 目标是在开发不同游戏项目时，复用已经实现的系统，通过配置和扩展补充具体游戏的规则，减少重复开发。框架既包含基础能力，也可以包含背包、属性、任务等可选玩法模块。
 
-首个接入目标是 Unreal Engine 的 C++ 游戏项目。核心代码以独立 C++ 实现为起点，Lua 的职责和接入方式后续根据实际需求确定。
+当前游戏开发主线是 Cocos Creator 与微信小游戏，因此优先建设 TypeScript 版本；同时保留 C++ 版本，支持未来独立使用或接入 UE 的需求。两种语言分别维护实现，共享模块规则，允许功能进度不同。
 
-**当前状态：已实现独立 C++ 核心构建、基础背包模块和对应测试。UE 适配插件、Lua 接入及其他系统仍处于规划阶段。** 本文中的系统范围和目录布局为目标设计，具体已实现功能见 [README](../README.md)。引擎版本和平台支持范围以实际构建与运行验证为准。
+**当前状态：C++ 和 TypeScript 均已实现独立构建、基础背包模块和测试。Cocos、微信、UE 适配及其他系统仍处于规划阶段。** 具体已实现功能见 [README](../README.md)。引擎版本和平台支持范围以实际构建与运行验证为准。
 
 ## 2. 仓库职责
 
@@ -34,13 +34,13 @@ GameFoundation 是通用游戏系统框架，采用核心代码与引擎、平�
 - 不直接调用具体平台的 SDK 或 API。
 - 不引用某个游戏项目的角色类型、配置或资源。
 - 需要存储、时间等外部能力时，通过明确的接口或参数获取。
-- 能在不安装 UE 的环境中独立编译、运行和测试。
+- 能在不安装游戏引擎的环境中独立构建、运行和测试。
 
 “核心独立”是代码依赖关系上的约定，不能仅通过移动文件或拆分目录实现。
 
 ### 3.2 引擎适配层
 
-引擎适配层负责将核心系统接入引擎的对象、生命周期和运行机制。UE 适配层可能包含：
+引擎适配层负责将核心系统接入引擎的对象、生命周期和运行机制，位于各语言目录下的 `adapters/engines/`。Cocos 适配负责连接 TypeScript 核心与 `cc` 对象、组件及资源系统；UE 适配可能包含：
 
 - 插件描述文件、模块定义和构建配置。
 - C++ 核心与 UE 对象、组件、Subsystem 等机制的连接。
@@ -97,53 +97,81 @@ GameFoundation 是通用游戏系统框架，采用核心代码与引擎、平�
 
 玩法模块应允许按需选择。例如，使用背包系统不应被迫依赖任务或技能系统。
 
-## 5. 目录规划
+## 5. 目录组织
 
-以下为目标布局，目录随真实代码和文档逐步建立，尚未实现的模块无需提前创建占位内容。
+先按语言划分实现，再在各语言内部按系统模块组织。C++ 同一模块的头文件与实现放在一起，测试按模块对应组织。
 
 ```text
 game-foundation/
 |-- README.md
-|-- CMakeLists.txt
-|-- core/
-|   |-- include/gamefoundation/
-|   `-- src/
-|-- adapters/
-|   |-- engines/
-|   |   `-- unreal/
-|   |       `-- GameFoundation/
-|   |           |-- GameFoundation.uplugin
-|   |           |-- Source/
-|   |           `-- Content/
-|   `-- platforms/
-|       |-- taptap/
-|       `-- wechat/
-|-- tests/
-`-- docs/
-    `-- project-overview.md
+|-- docs/
+|   `-- project-overview.md
+|-- specs/
+|   `-- inventory.md
+|-- cpp/
+|   |-- CMakeLists.txt
+|   |-- core/
+|   |   |-- CMakeLists.txt
+|   |   `-- inventory/
+|   |       |-- CMakeLists.txt
+|   |       |-- inventory.hpp
+|   |       `-- inventory.cpp
+|   |-- adapters/
+|   |   `-- README.md
+|   |-- tests/
+|   |   |-- CMakeLists.txt
+|   |   `-- inventory/
+|   |       |-- CMakeLists.txt
+|   |       `-- inventory_tests.cpp
+|   `-- docs/
+|       |-- building.md
+|       `-- inventory.md
+`-- typescript/
+    |-- README.md
+    |-- core/
+    |   |-- README.md
+    |   |-- package.json
+    |   |-- package-lock.json
+    |   |-- tsconfig.json
+    |   |-- tsconfig.tests.json
+    |   |-- src/
+    |   |   |-- index.ts
+    |   |   `-- inventory/
+    |   |       `-- inventory.ts
+    |   `-- tests/
+    |       `-- inventory/
+    |           |-- inventory.test.mjs
+    |           `-- inventory.types.ts
+    |-- adapters/
+    |   `-- README.md
+    `-- docs/
+        |-- building.md
+        `-- inventory.md
 ```
 
-- `core/`：独立于引擎和平台的 C++ 代码及公共接口。
-- `adapters/engines/`：引擎插件、桥接代码和相关构建配置。
-- `adapters/platforms/`：平台服务接入代码；按目标环境选择语言和构建方式。
-- `tests/`：核心规则与模块间约定的验证。
-- `docs/`：定位、设计、构建、接入和使用说明。
-- `CMakeLists.txt`：独立构建核心和测试；UE 接入还需要对应的模块构建配置。
+- `specs/`：语言无关的模块规则与共同验收场景。已有背包规则见[背包规则](../specs/inventory.md)。
+- `cpp/`：C++ 构建入口、核心模块、适配层、测试与语言专用文档。
+- `typescript/`：TypeScript 核心和适配层的独立区域，具体规划见[TypeScript 布局](../typescript/README.md)。
+- 各语言的 `adapters/engines/` 和 `adapters/platforms/`：按真实需要添加引擎和平台实现，不预先创建空适配器。
+- 根目录 `docs/`：项目定位和整体设计；各语言的 `docs/`：该版本的构建、API 与使用说明。
+
+C++ 通过独立模块目标实现按需接入，目前提供 `GameFoundation::Inventory`。`GameFoundation::Core` 作为聚合入口连接当前核心模块。文件夹用于组织代码，依赖关系由构建目标显式声明。
 
 仓库、代码及资源目录使用英文命名，文档正文可以使用中文。仓库名 `game-foundation` 与框架名、UE 插件名 `GameFoundation` 分别遵循各自的命名习惯，无需完全一致。
 
 ## 6. 语言与跨环境复用
 
-第一阶段以纯 C++ 核心和 UE 适配层验证整体结构。是否引入 Lua，以及哪些规则由 Lua 承担，应在实际需求明确后决定。
+两种语言共享行为定义，各自使用合适的工具链、接口命名和测试。当前两版均已完成基础背包，并分别记录查询结果生命周期和数值限制。
 
 跨引擎复用与跨语言复用需要分别处理：
 
 - 纯 C++ 核心可以解除对 UE 的依赖，但目标环境仍需支持相应的编译和运行方式。
 - 在微信小游戏等环境中使用 C++，需要验证 WebAssembly 等路线及对应的桥接和构建条件。
 - Lua 代码需要兼容的运行时和接入方式，不能假定所有引擎、平台均能直接运行。
-- 使用 TypeScript 等其他语言的项目，需要通过桥接复用已有代码，或另行实现相同规则。
+- 当前规划在 Cocos 中使用独立 TypeScript 实现，C++ 版本不作为其运行依赖。
+- Lua 或其他语言接入根据实际需求另行评估。
 
-目录分离不会自动完成这些工作。只有在目标环境中验证通过后，才将其列为已支持环境。
+目录分离不会自动完成跨语言或跨环境接入。只有在目标环境中验证通过后，才将其列为已支持环境。未来发布到 Steam 也不必然需要换用 UE，是否更换引擎应根据游戏需求判断。
 
 ## 7. 与游戏仓库的关系
 
@@ -155,15 +183,14 @@ game-foundation/
 
 ### 7.1 通过 Git 子模块接入
 
-游戏仓库可将框架检出到 `External/GameFoundation`：
+游戏仓库可将整个框架检出到 `External/GameFoundation`，再选择需要的语言版本。下图只展示引用关系，不限定游戏工程的引擎：
 
 ```text
 MyGame/
-|-- MyGame.uproject
-|-- Source/
-|-- Content/
 `-- External/
     `-- GameFoundation/
+        |-- cpp/
+        `-- typescript/
 ```
 
 子模块记录框架仓库地址和具体提交 ID。游戏可以固定使用一个已经验证的框架版本，随后按需升级。其他游戏可以使用不同版本，彼此独立。
@@ -184,9 +211,11 @@ MyGame/
 
 上述行为按普通 Git 操作描述。额外设置的递归推送或自动化脚本可能触发其他操作。子模块可能检出为 detached HEAD，开发前应先切换或创建工作分支。
 
-### 7.3 UE 接入
+### 7.3 引擎接入
 
-框架根目录包含核心与多个适配目录，因此 UE 插件位于 `adapters/engines/unreal/GameFoundation`，而非仓库根目录。
+Cocos 接入以 TypeScript 核心为基础，后续需要配置源码或构建产物的引入方式，再添加 `typescript/adapters/engines/cocos/` 和所需的平台适配。当前已提供独立核心包，但尚未验证 Cocos 项目和微信真机接入。
+
+未来 UE 插件规划位于 `cpp/adapters/engines/unreal/GameFoundation`。框架根目录不作为 UE 插件根目录。
 
 UE 游戏需要配置插件搜索路径、启用插件，并在使用插件类型的游戏模块中声明模块依赖。适配层还需要配置核心代码的编译或链接；仅设置插件目录不会自动编译外部 C++ 核心。
 
@@ -194,13 +223,13 @@ Git 依赖接入与 UE 编译接入是两个步骤，应分别验证。
 
 ## 8. 实施顺序
 
-1. 建立仓库文档与依赖关系，明确核心、适配层和游戏项目的职责。
-2. 建立独立 C++ 构建，以一个小型背包模块验证添加、移除、堆叠和容量规则。
-3. 在不启动 UE 的情况下编译、运行并验证核心逻辑。
-4. 建立 UE 适配插件，让实际游戏能够调用核心，并验证两者的连接。
-5. 根据游戏开发中的实际需求增加模块；在确定第二种目标环境后，验证同一核心代码的复用路线。
+1. 保留已实现的 C++ 背包及独立测试，完成按语言、按模块的布局。
+2. 维护已实现的 TypeScript 核心包、背包及测试，使其持续遵循共同规则。
+3. 在独立核心测试通过的基础上验证游戏项目接入。
+4. 建立 Cocos 和微信适配，完成微信开发者工具与真机验证。
+5. 按实际游戏需求增加模块；C++ 和其他平台接入按需求推进，不强求两版同步新增全部功能。
 
-首个里程碑是：核心可独立运行、UE 可调用核心、两个仓库可分别维护，并能从版本记录恢复完整依赖。
+当前主线里程碑是：TypeScript 核心可独立测试，Cocos 可调用核心，微信小游戏可运行，框架与游戏仓库可分别维护并还原依赖。
 
 ## 9. 参考资料
 
@@ -209,3 +238,4 @@ Git 依赖接入与 UE 编译接入是两个步骤，应分别验证。
 - [UE 项目描述与额外插件目录](https://dev.epicgames.com/documentation/en-us/unreal-engine/API/Runtime/Projects/FProjectDescriptor)
 - [TapTap 开发者文档](https://developer.taptap.cn/docs/sdk/)
 - [微信小游戏开发指南](https://developers.weixin.qq.com/minigame/dev/guide/)
+- [Cocos Creator 跨平台发布](https://docs.cocos.com/creator/3.8/manual/zh/editor/publish/)
