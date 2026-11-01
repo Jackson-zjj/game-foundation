@@ -1,5 +1,5 @@
 import { Inventory, InventoryResult } from "@game-foundation/core";
-import type { ItemDefinition, ItemStack } from "@game-foundation/core";
+import type { InventorySnapshot, ItemDefinition, ItemStack } from "@game-foundation/core";
 
 const item: ItemDefinition = { id: "potion", maxStackSize: 10 };
 const inventory = new Inventory(2);
@@ -20,3 +20,11 @@ stacks[0]!.item.id = "changed";
 item.id = "changed";
 // @ts-expect-error Quantities must be numbers.
 inventory.addItem(item, "1");
+
+const snapshot: InventorySnapshot = inventory.toSnapshot();
+const restored: Inventory = Inventory.fromSnapshot(snapshot);
+restored.getUsedSlotCount();
+// @ts-expect-error Snapshot versions are readonly.
+snapshot.version = 1;
+// @ts-expect-error Snapshot stack collections are readonly.
+snapshot.stacks.push({ item: { id: "sword", maxStackSize: 1 }, quantity: 1 });
