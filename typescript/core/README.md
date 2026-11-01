@@ -1,6 +1,6 @@
 # TypeScript 核心
 
-本目录保存独立于引擎和平台的 TypeScript 模块，目前已实现基础背包。
+本目录保存独立于引擎和平台的 TypeScript 模块，目前已实现基础背包、版本化快照和存档基础。
 
 使用独立的 `package.json` 和 `tsconfig.json` 管理构建；源码按 `src/inventory/` 等系统划分，测试按 `tests/inventory/` 等目录对应组织。
 
@@ -22,7 +22,13 @@ npm test
 
 ## 包入口
 
-包名为 `@game-foundation/core`，根入口和 `@game-foundation/core/inventory` 均导出 `Inventory`、`InventoryResult` 及相关类型。
+包名为 `@game-foundation/core`。根入口导出全部核心接口，也可以按模块使用：
+
+- `@game-foundation/core/inventory`：背包、操作结果和快照类型。
+- `@game-foundation/core/save`：存档管理器、存储与编解码接口、内存后端。
+- `@game-foundation/core/inventory/save`：背包编解码器。
+
+内存后端用于独立验证，不会在重启后保留数据。实际持久化需要由宿主提供 `SaveStorage` 实现。
 
 当前包设置为 `private`，不会直接发布到 npm。需要其他项目接入时，先完成构建，再使用本地包或打包产物；Cocos 项目接入方式尚待实际验证。
 
@@ -30,4 +36,4 @@ npm test
 
 背包模块的共同规则见[背包规则](../../specs/inventory.md)。
 
-完整操作见[构建说明](../docs/building.md)，接口与数值限制见[背包说明](../docs/inventory.md)。
+完整操作见[构建说明](../docs/building.md)，接口见[背包说明](../docs/inventory.md)和[存档说明](../docs/save.md)。

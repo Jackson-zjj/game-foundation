@@ -8,7 +8,7 @@ GameFoundation 是通用游戏系统框架，采用核心代码与引擎、平�
 
 当前游戏开发主线是 Cocos Creator 与微信小游戏，因此优先建设 TypeScript 版本；同时保留 C++ 版本，支持未来独立使用或接入 UE 的需求。两种语言分别维护实现，共享模块规则，允许功能进度不同。
 
-**当前状态：C++ 和 TypeScript 均已实现独立构建、基础背包模块和测试。Cocos、微信、UE 适配及其他系统仍处于规划阶段。** 具体已实现功能见 [README](../README.md)。引擎版本和平台支持范围以实际构建与运行验证为准。
+**当前状态：C++ 和 TypeScript 均已实现独立构建、基础背包模块和测试；TypeScript 还提供版本化快照、存档管理器和内存存储。Cocos、微信、UE 适配及其他系统仍处于规划阶段。** 内存存储不提供跨进程持久化。具体已实现功能见 [README](../README.md)。引擎版本和平台支持范围以实际构建与运行验证为准。
 
 ## 2. 仓库职责
 
@@ -107,7 +107,8 @@ game-foundation/
 |-- docs/
 |   `-- project-overview.md
 |-- specs/
-|   `-- inventory.md
+|   |-- inventory.md
+|   `-- save.md
 |-- cpp/
 |   |-- CMakeLists.txt
 |   |-- core/
@@ -136,17 +137,27 @@ game-foundation/
     |   |-- tsconfig.tests.json
     |   |-- src/
     |   |   |-- index.ts
-    |   |   `-- inventory/
-    |   |       `-- inventory.ts
+    |   |   |-- inventory/
+    |   |   |   |-- inventory.ts
+    |   |   |   `-- inventory-save-codec.ts
+    |   |   `-- save/
+    |   |       |-- index.ts
+    |   |       |-- save.ts
+    |   |       `-- memory-save-storage.ts
     |   `-- tests/
-    |       `-- inventory/
-    |           |-- inventory.test.mjs
-    |           `-- inventory.types.ts
+    |       |-- inventory/
+    |       |   |-- inventory.test.mjs
+    |       |   |-- inventory-snapshot.test.mjs
+    |       |   `-- inventory.types.ts
+    |       `-- save/
+    |           |-- save.test.mjs
+    |           `-- save.types.ts
     |-- adapters/
     |   `-- README.md
     `-- docs/
         |-- building.md
-        `-- inventory.md
+        |-- inventory.md
+        `-- save.md
 ```
 
 - `specs/`：语言无关的模块规则与共同验收场景。已有背包规则见[背包规则](../specs/inventory.md)。
@@ -223,13 +234,13 @@ Git 依赖接入与 UE 编译接入是两个步骤，应分别验证。
 
 ## 8. 实施顺序
 
-1. 保留已实现的 C++ 背包及独立测试，完成按语言、按模块的布局。
-2. 维护已实现的 TypeScript 核心包、背包及测试，使其持续遵循共同规则。
-3. 在独立核心测试通过的基础上验证游戏项目接入。
-4. 建立 Cocos 和微信适配，完成微信开发者工具与真机验证。
-5. 按实际游戏需求增加模块；C++ 和其他平台接入按需求推进，不强求两版同步新增全部功能。
+1. 持续验证两种语言的背包规则，维护独立构建、公开接口和模块文档。
+2. 在 TypeScript 主线上完善存档等基础能力，定义协议与存储边界，再根据需求补充实际持久化后端。
+3. 后续配置、属性或其他模块按需求逐项实现，每项提供独立测试与使用说明。
+4. 引擎和游戏工程接入作为独立阶段，在目标环境中进行验证。
+5. C++ 和其他平台接入按需求推进，不强求两版同步新增全部功能。
 
-当前主线里程碑是：TypeScript 核心可独立测试，Cocos 可调用核心，微信小游戏可运行，框架与游戏仓库可分别维护并还原依赖。
+当前阶段以框架独立能力为重点：模块可以脱离游戏工程测试，职责与数据格式明确，错误可识别，使用方式有文档。当前存档规则见[存档协议](../specs/save.md)，API 见[TypeScript 存档](../typescript/docs/save.md)。
 
 ## 9. 参考资料
 

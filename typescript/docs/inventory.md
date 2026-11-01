@@ -2,7 +2,7 @@
 
 ## 范围
 
-实现位于 `typescript/core/src/inventory/inventory.ts`，共同规则见[背包规则](../../specs/inventory.md)。提供添加、移除、堆叠、容量限制和查询，不包含界面、存档、物品效果或引擎适配。
+实现位于 `typescript/core/src/inventory/inventory.ts`，共同规则见[背包规则](../../specs/inventory.md)。提供添加、移除、堆叠、容量限制、查询和版本化快照。保存与读取由[存档模块](save.md)处理，背包本身不访问文件、平台存储或引擎。
 
 ## 用法
 
@@ -52,6 +52,16 @@ if (inventory.getItemCount("potion") !== 12) {
 | `getUsedSlotCount()` | 查询已用格数 |
 | `getItemCount(itemId)` | 查询该物品总数量，不存在时返回 `0` |
 | `getStacks()` | 获取堆叠的只读快照 |
+| `toSnapshot()` | 导出带版本、容量和堆叠数据的独立快照 |
+| `Inventory.fromSnapshot(value)` | 校验未知数据并恢复为新背包，非法快照抛出 `TypeError` |
+
+## 快照与恢复
+
+`toSnapshot()` 返回 `InventorySnapshot`，格式为 `{ version: 1, slotCapacity, stacks }`。可以通过标准 JSON 序列化保存，再交给 `Inventory.fromSnapshot()` 校验和恢复。
+
+恢复时检查版本、容量、每格数量、同 ID 的堆叠上限和总数量范围。恢复保留合法的堆叠顺序与数量，包括多个未满堆叠，不会自动合并它们。恢复结果不保留输入对象引用，也不修改已有实例。
+
+该快照格式当前只在 TypeScript 实现；C++ 尚未提供相应导入导出。跨语言的格式参考见[存档规则](../../specs/save.md)。
 
 ## 操作结果
 

@@ -2,7 +2,7 @@
 
 该版本面向当前 Cocos Creator 与微信小游戏开发方向。与 C++ 版本共享系统规则，分别维护源码、构建配置和测试。
 
-**当前状态：已实现独立核心包、基础背包、构建与测试。Cocos 组件和微信服务适配尚未实现。**
+**当前状态：已实现独立核心包、基础背包、版本化快照、存档基础与内存存储，以及对应测试。Cocos 组件和微信服务适配尚未实现。**
 
 ## 目录约定
 
@@ -17,17 +17,27 @@ typescript/
 |   |-- tsconfig.tests.json
 |   |-- src/
 |   |   |-- index.ts
-|   |   `-- inventory/
-|   |       `-- inventory.ts
+|   |   |-- inventory/
+|   |   |   |-- inventory.ts
+|   |   |   `-- inventory-save-codec.ts
+|   |   `-- save/
+|   |       |-- index.ts
+|   |       |-- save.ts
+|   |       `-- memory-save-storage.ts
 |   `-- tests/
-|       `-- inventory/
-|           |-- inventory.test.mjs
-|           `-- inventory.types.ts
+|       |-- inventory/
+|       |   |-- inventory.test.mjs
+|       |   |-- inventory-snapshot.test.mjs
+|       |   `-- inventory.types.ts
+|       `-- save/
+|           |-- save.test.mjs
+|           `-- save.types.ts
 |-- adapters/
 |   `-- README.md
 `-- docs/
     |-- building.md
-    `-- inventory.md
+    |-- inventory.md
+    `-- save.md
 ```
 
 后续按实际需求增加 `adapters/engines/cocos/` 和 `adapters/platforms/wechat/`。
@@ -43,7 +53,7 @@ npm --prefix typescript/core test
 
 `test` 会先编译 TypeScript、检查公开类型约束，再通过 Node 自带测试工具验证生成的 JavaScript。Windows PowerShell 如无法执行 `npm.ps1`，可使用 `npm.cmd`。
 
-完整操作见[构建说明](docs/building.md)，使用方式见[背包接口](docs/inventory.md)。
+完整操作见[构建说明](docs/building.md)，使用方式见[背包接口](docs/inventory.md)和[存档基础](docs/save.md)。内存后端仅用于临时会话与测试，实际持久化由存储适配实现。
 
 ## 依赖约定
 
@@ -52,4 +62,4 @@ npm --prefix typescript/core test
 - 引擎与平台接入代码放在对应适配目录，分别声明自身所需的环境和依赖。
 - 模块行为以根目录的 [specs](../specs/inventory.md) 为依据，语言特有的类型和数值限制单独记录。
 
-下一步根据游戏项目需要接入 Cocos 和微信。C++ 与 TypeScript 的功能进度可以不同，支持状态由根目录 README 和各版本文档说明。
+当前先完善可独立验证的核心模块，引擎与平台接入作为独立阶段推进。C++ 与 TypeScript 的功能进度可以不同，支持状态由根目录 README 和各版本文档说明。
